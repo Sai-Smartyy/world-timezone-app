@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="world-demo-http-listener" doc:name="HTTP Listener config" doc:id="71ce2740-0447-43d6-9255-66e1b4fbe48b" basePath="/timezone">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="32ead603-d632-47b3-9798-8da5ce4b1773" basePath="/api/timezone" >
+		<http:request-connection host="worldtimeapi.org" />
+	</http:request-config>
+	<flow name="world-demo-apiFlow" doc:id="8dba2cbe-b078-424a-92c1-02effea17f86" >
+		<http:listener doc:name="HTTP-LISTENER" doc:id="e057367d-93a9-4cd8-9b3f-671bda66637d" config-ref="world-demo-http-listener" path="/{region}/{city}">
+			<http:error-response >
+				<http:body ><![CDATA[#[output application/json --- payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<http:request method="GET" doc:name="Consuming World Health API" doc:id="4640ec84-44cb-4478-be7f-8ad1327b8212" config-ref="HTTP_Request_configuration" path="/{region}/{city}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	city : attributes.uriParams.city,
+	region : attributes.uriParams.region
+}]]]></http:uri-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="865d917c-c94d-4ea1-b542-3bc7c39bac57" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Requested_time_zone : payload.timezone,
+	Today_Date : payload.utc_datetime,
+	Today_week : payload.week_number
+	}
+	]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7029b937-daf0-4ef9-b118-1c62e048b2a3" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="5eeb77b9-b656-47f4-ad5d-698ea1d46e2f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Error_Occured : "YES",
+	Error_Description : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
