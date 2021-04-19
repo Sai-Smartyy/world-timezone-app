@@ -31,6 +31,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/json
 ---
 {
+	Status : "Sucess",
 	Requested_time_zone : payload.timezone,
 	Today_Date : payload.utc_datetime,
 	Today_week : payload.week_number
