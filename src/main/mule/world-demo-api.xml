@@ -39,8 +39,10 @@ output application/json
 	]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="45bb1c4c-0330-4290-a44c-8ec292198f37" message="Flow is Completed and the Payload is #[payload]"/>
 		<error-handler >
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7029b937-daf0-4ef9-b118-1c62e048b2a3" type="ANY">
+				<logger level="INFO" doc:name="Logger" doc:id="8e112a07-abaa-4ec4-b643-a1123c113a49" message="Flow is entered into Error Handling"/>
 				<ee:transform doc:name="Transform Message" doc:id="5eeb77b9-b656-47f4-ad5d-698ea1d46e2f" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
